@@ -15,7 +15,7 @@ $ pip install marctable
 To convert all the MARC fields to CSV columns:
 
 ```
-$ marctable data.marc data.csv
+$ marctable csv data.marc data.csv
 ```
 
 For example, this will generate a CSV with 215 columns, one column for each MARC field. Fields that can repeat will appear as a list:
