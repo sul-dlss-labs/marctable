@@ -20,9 +20,13 @@ pandas = "^2.1.4"
 beautifulsoup4 = "^4.12.2"
 requests = "^2.31.0"
 pyyaml = "^6.0.1"
+click = "^8.1.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
+
+[tool.poetry.scripts]
+marctable = "marctable:main"
 
 [build-system]
 requires = ["poetry-core"]

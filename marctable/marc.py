@@ -1,5 +1,6 @@
 import pathlib
 import re
+import sys
 from functools import cache
 from typing import Generator
 from urllib.parse import urljoin
@@ -136,7 +137,7 @@ def main() -> None:
         print(f)
         marc_fields.append(f.to_dict())
     # write out the collected data
-    yaml.dump(marc_fields, _yaml_file.open('w'), default_flow_style=False)
+    yaml.dump(marc_fields, sys.stdout, default_flow_style=False)
 
 def _soup(url: str) -> BeautifulSoup:
     return BeautifulSoup(requests.get(url).text, 'html.parser')

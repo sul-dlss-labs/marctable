@@ -1,83 +1,40 @@
-import typing
+from collections.abc import Callable
 
-import pandas
-import pymarc
+import click
 
-from .marc import MARC
+import marctable.marc
 
-marc = MARC()
-
-def to_dataframe(marc_input: typing.BinaryIO, mapping=None) -> pandas.DataFrame:
-
-    # if not defined give them ALL the MARC fields; otherwise unpack them
-    if mapping is None:
-        mapping = _mapping(marc.fields.keys())
-    else:
-        mapping = _mapping(mapping)
-
-    rows = []
-    for record in pymarc.MARCReader(marc_input):
-        r = {}
-        for field in record.fields:
-            if field.tag not in mapping:
-                continue
-
-            subfields = mapping[field.tag]
-
-            # if subfields aren't specified stringify them
-            if subfields is None:
-                if marc.get_field(field.tag).repeatable:
-                    value = r.get(field.tag, [])
-                    value.append(_stringify_field(field))
-                else:
-                    value = _stringify_field(field)
-
-                r[field.tag] = value
-
-            # otherwise only add the subfields that were requested in the mapping
-            else:
-                for sf in field.subfields:
-                    if sf.code not in subfields:
-                        continue
-
-                    key = f"{field.tag}{sf.code}"
-                    if marc.get_subfield(field.tag, sf.code).repeatable:
-                        value = r.get(key, [])
-                        value.append(sf.value)
-                    else:
-                        value = sf.value
-
-                    r[key] = value
-
-        rows.append(r)
-
-    return pandas.DataFrame.from_records(rows)
+from .utils import to_dataframe, to_csv
 
 
-def _stringify_field(field: pymarc.Field) -> str:
-    if field.is_control_field():
-        return field.data
-    else:
-        return ' '.join([sf.value for sf in field.subfields])
+@click.group()
+def cli() -> None:
+    pass
 
-def _mapping(mapping: list) -> dict:
+def common_params(f: Callable) -> Callable:
     """
-    unpack the mapping rules into a dictionary for easy lookup
-
-    >>> _mapping["245", "260ac"]
-    {'245': None, '260': ['a', 'c']}
+    Decorator for specifying input/output arguments and rules.
     """
-    m = {}
-    for rule in mapping:
-        field_tag = rule[0:3]
-        if marc.get_field(field_tag) is None:
-            raise Exception(f"unknown MARC field in mapping rule: {rule}")
+    f = click.argument("outfile", type=click.File("w"), default="-")(f)
+    f = click.argument("infile", type=click.File("rb"), default="-")(f)
+    f = click.option("--rule", "-r", "rules", multiple=True, help="Specify a rule for a field or field/subfield to extract, e.g. 245 or 245a")(f)
+    f = click.option("--batch", "-b", default=1000, help="Batch n records when converting")(f)
+    return f
 
-        subfields = set(list(rule[3:]))
-        for subfield_code in subfields:
-            if marc.get_subfield(field_tag, subfield_code) is None:
-                raise Exception(f"unknown MARC subfield in mapping rule: {rule}")
+@cli.command()
+@common_params
+def csv(infile: click.File, outfile: click.File, rules: list, batch: int) -> None:
+    """
+    Convert MARC to CSV.
+    """
+    to_csv(infile, outfile, rules=rules, batch=batch)
 
-        m[field_tag] = subfields or None
+@cli.command()
+def yaml() -> None:
+    """
+    Generate YAML for the MARC specification by scraping the Library of Congress.
+    """
+    marctable.marc.main()
 
-    return m
+def main() -> None:
+    cli()
