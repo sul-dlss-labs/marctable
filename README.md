@@ -52,7 +52,7 @@ Nursing pharmacology made incredibly easy!,Nursing.,,['Title from disc label.']
 
 ## Regenerate YAML
 
-If you want to regenerate the MARC YAML file from the Library of Congress website:
+If you want to regenerate the MARC [YAML file] from the Library of Congress website:
 
 ```
 $ marctable yaml
