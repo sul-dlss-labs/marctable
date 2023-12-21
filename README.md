@@ -58,5 +58,5 @@ If you want to regenerate the MARC YAML file from the Library of Congress websit
 $ marctable yaml
 ```
 
-[MARC documentation]: https://www.loc.gov/marc/bibliographic/
+[MARC Bibliographic documentation]: https://www.loc.gov/marc/bibliographic/
 [YAML file]: https://github.com/edsu/marctable/blob/main/marctable/marc.yaml
