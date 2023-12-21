@@ -8,14 +8,20 @@ from .marc import MARC
 
 marc = MARC()
 
-def to_dataframe(marc_input: typing.BinaryIO, rules: list=[]) -> DataFrame:
+
+def to_dataframe(marc_input: typing.BinaryIO, rules: list = []) -> DataFrame:
     """
     Return a single DataFrame for the entire dataset.
     """
     return next(dataframe_iter(marc_input, rules, batch=0))
 
-def to_csv(marc_input: typing.BinaryIO, csv_output: typing.TextIO, rules:
-           list=[], batch: int=1000) -> None:
+
+def to_csv(
+    marc_input: typing.BinaryIO,
+    csv_output: typing.TextIO,
+    rules: list = [],
+    batch: int = 1000,
+) -> None:
     """
     Convert MARC to CSV.
     """
@@ -23,7 +29,10 @@ def to_csv(marc_input: typing.BinaryIO, csv_output: typing.TextIO, rules:
     for df in dataframe_iter(marc_input, rules=rules, batch=batch):
         df.to_csv(csv_output, header=first_batch, index=False)
 
-def dataframe_iter(marc_input: typing.BinaryIO, rules: list=[], batch: int = 1000) -> Generator[DataFrame, None, None]:
+
+def dataframe_iter(
+    marc_input: typing.BinaryIO, rules: list = [], batch: int = 1000
+) -> Generator[DataFrame, None, None]:
     """
     Read MARC input and generate Pandas DataFrames for them in batches.
     """
@@ -85,7 +94,8 @@ def _stringify_field(field: pymarc.Field) -> str:
     if field.is_control_field():
         return field.data
     else:
-        return ' '.join([sf.value for sf in field.subfields])
+        return " ".join([sf.value for sf in field.subfields])
+
 
 def _mapping(rules: list) -> dict:
     """
@@ -109,6 +119,7 @@ def _mapping(rules: list) -> dict:
 
     return m
 
+
 def _columns(mapping: dict) -> list:
     cols = []
     for field_tag, subfields in mapping.items():
@@ -118,4 +129,3 @@ def _columns(mapping: dict) -> list:
             for sf in subfields:
                 cols.append(f"F{field_tag}{sf}")
     return cols
-
