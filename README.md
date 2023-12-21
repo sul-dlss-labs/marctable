@@ -1,5 +1,7 @@
 # marctable
 
+[![Build Status](https://github.com/edsu/marctable/actions/workflows/test.yml/badge.svg)](https://github.com/edsu/marctable/actions/workflows/test.yml)
+
 *marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like CSV and Parquet. It uses the Library of Congress [MARC Bibliographic documentation] to determine whether fields and subfields should repeat or not. The documentation is collected into a [YAML file].
 
 ## Install
