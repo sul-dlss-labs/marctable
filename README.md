@@ -1,6 +1,6 @@
 # marctable
 
-*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like CSV and Parquet.
+*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like CSV and Parquet. It uses the Library of Congress [MARC Bibliographic documentation] to determine whether fields and subfield should repeat or not. The documentation is collected into a [YAML file].
 
 ## Install
 
@@ -49,3 +49,14 @@ Records and history of the United States Geological Survey,Geological surveys,,[
 Nursing procedures,Nursing.,,['Title from disc label.']
 Nursing pharmacology made incredibly easy!,Nursing.,,['Title from disc label.']
 ```
+
+## Regenerate YAML
+
+If you want to regenerate the MARC YAML file from the Library of Congress website:
+
+```
+$ marctable yaml
+```
+
+[MARC documentation]: https://www.loc.gov/marc/bibliographic/
+[YAML file]: https://github.com/edsu/marctable/blob/main/marctable/marc.yaml
