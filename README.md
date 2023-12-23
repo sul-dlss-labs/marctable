@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/edsu/marctable/actions/workflows/test.yml/badge.svg)](https://github.com/edsu/marctable/actions/workflows/test.yml)
 
-*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like CSV and Parquet. It uses the Library of Congress [MARC Bibliographic documentation] to determine whether fields and subfields should repeat or not. The MARC documentation is collected into a [YAML file], which you could use for other things I suppose.
+*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like CSV and Parquet. It uses the Library of Congress [MARC Bibliographic documentation] to determine whether fields and subfields should repeat or not. The MARC documentation is collected into a [YAML file], which you could be repurposed for other things where knowing the structure of MARC bibliographic data is important.
 
 ## Install
 
@@ -12,7 +12,11 @@ $ pip install marctable
 
 ## Usage
 
-To convert all the MARC fields to CSV columns:
+*marctable* provides a subcommand style interface for exporting MARC data.
+
+### CSV
+
+CSV is a commonly used data format. It doesn't represent lists of values with columns very well though. To convert all the MARC fields to CSV:
 
 ```
 $ marctable csv data.marc data.csv
@@ -52,6 +56,28 @@ Nursing procedures,Nursing.,,['Title from disc label.']
 Nursing pharmacology made incredibly easy!,Nursing.,,['Title from disc label.']
 ```
 
+### Parquet
+
+You can also write the data as a [Parquet] file, which has advantages in that it can represent lists of elements in columns for repeatable fields and subfields, and it works in data analysis environments.
+
+```
+$ marctable parquet data.marc data.parquet
+```
+
+or with rules:
+
+```
+$ marctable parquet --rules 245a --rule 650a data.marc data.parquet
+```
+
+### JSONL
+
+And you can write the table as JSON Lines (JSONL), where each line is a distinct JSON object.
+
+```
+$ marctable jsonl data.marc data.jsonl
+```
+
 ## Regenerate YAML
 
 If you want to regenerate the MARC [YAML file] from the Library of Congress website:
@@ -62,3 +88,4 @@ $ marctable yaml
 
 [MARC Bibliographic documentation]: https://www.loc.gov/marc/bibliographic/
 [YAML file]: https://github.com/edsu/marctable/blob/main/marctable/marc.yaml
+[Parquet]: https://en.wikipedia.org/wiki/Apache_Parquet

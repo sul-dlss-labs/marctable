@@ -1,6 +1,7 @@
 import pandas
+import pathlib
 from marctable.marc import MARC, make_field
-from marctable.utils import _mapping, dataframe_iter, to_csv, to_dataframe
+from marctable.utils import _mapping, dataframe_iter, to_csv, to_dataframe, to_parquet
 
 marc = MARC()
 
@@ -104,3 +105,28 @@ def test_to_csv() -> None:
         df.iloc[0]["F245"]
         == "Leak testing CD-ROM [computer file] / technical editors, Charles N. Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
     )
+
+
+def test_to_parquet() -> None:
+    to_parquet(
+        open("test-data/utf8.marc", "rb"),
+        open("test-data/utf8.parquet", "wb"),
+        batch=1000,
+    )
+    assert pathlib.Path("test-data/utf8.parquet").is_file()
+    df = pandas.read_parquet("test-data/utf8.parquet")
+    assert len(df) == 10612
+    assert len(df.columns) == 215
+
+
+def test_to_parquet_with_rules() -> None:
+    to_parquet(
+        open("test-data/utf8.marc", "rb"),
+        open("test-data/utf8.parquet", "wb"),
+        batch=1000,
+        rules=["001", "245", "650v"],
+    )
+    assert pathlib.Path("test-data/utf8.parquet").is_file()
+    df = pandas.read_parquet("test-data/utf8.parquet")
+    assert len(df) == 10612
+    assert len(df.columns) == 3
