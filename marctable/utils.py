@@ -9,8 +9,6 @@ from pyarrow.parquet import ParquetWriter
 
 from .marc import MARC
 
-marc = MARC()
-
 
 def to_dataframe(marc_input: typing.BinaryIO, rules: list = []) -> DataFrame:
     """
@@ -81,6 +79,7 @@ def records_iter(
     represents a MARC record.
     """
     mapping = _mapping(rules)
+    marc = MARC.from_avram()
 
     rows = []
     for record in pymarc.MARCReader(marc_input):
@@ -147,8 +146,9 @@ def _mapping(rules: list) -> dict:
     >>> _mapping(["245", "260ac"])
     {'245': None, '260': ['a', 'c']}
     """
+    marc = MARC.from_avram()
     if rules is None or len(rules) == 0:
-        rules = marc.fields.keys()
+        rules = [field.tag for field in marc.fields]
 
     m = {}
     for rule in rules:
@@ -181,6 +181,7 @@ def _columns(mapping: dict) -> list:
 
 
 def _make_pandas_schema(rules: list) -> pyarrow.Schema:
+    marc = MARC.from_avram()
     mapping = _mapping(rules)
     schema = {}
     for field_tag, subfields in mapping.items():
@@ -197,6 +198,7 @@ def _make_pandas_schema(rules: list) -> pyarrow.Schema:
 
 
 def _make_parquet_schema(rules: list) -> pyarrow.Schema:
+    marc = MARC.from_avram()
     mapping = _mapping(rules)
     cols = []
     for field_tag, subfields in mapping.items():
