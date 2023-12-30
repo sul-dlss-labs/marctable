@@ -66,11 +66,12 @@ def jsonl(infile: click.File, outfile: click.File, rules: list, batch: int) -> N
 
 
 @cli.command()
-def yaml() -> None:
+@click.argument("outfile", type=click.File("w"), default="-")
+def avram(outfile: click.File) -> None:
     """
-    Generate YAML for the MARC specification by scraping the Library of Congress.
+    Generate Avram (YAML) from scraping the Library of Congress MARC bibliographic website.
     """
-    marctable.marc.main()
+    marctable.marc.crawl(outfile=outfile)
 
 
 def main() -> None:

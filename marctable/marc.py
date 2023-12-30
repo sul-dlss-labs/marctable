@@ -1,63 +1,76 @@
+"""
+This module contains classes to make it easier to work with MARC as an Avram
+schema, which is loaded from the marc.json that is alongside this file. The
+Avram schema lets marctable know which MARC fields and subfields are allowed,
+and whether they should be encoded as lists rather than single values. It also
+includes functions used for regenerating the Avram schema by crawling the MARC
+specification the Library of Congress website.
+
+For more about Avram see https://format.gbv.de/schema/avram/specification
+"""
+
+import json
 import pathlib
 import re
 import sys
 from functools import cache
-from typing import Generator
+from typing import IO, Generator
 from urllib.parse import urljoin
 
 import requests
-import yaml
 from bs4 import BeautifulSoup
-
-_yaml_file = pathlib.Path(__file__).parent / "marc.yaml"
-_marc = yaml.safe_load(_yaml_file.open())
 
 
 class Subfield:
-    def __init__(self, code: str, name: str, repeatable: bool = False) -> None:
+    def __init__(self, code: str, label: str, repeatable: bool = False) -> None:
         self.code = code
-        self.name = name
+        self.label = label
         self.repeatable = repeatable
 
     @classmethod
     def from_dict(_, d: dict):
-        return Subfield(d.get("code"), d.get("name"), d.get("repeatable"))
+        return Subfield(d.get("code"), d.get("label"), d.get("repeatable"))
 
     def to_dict(self) -> dict:
-        return {"code": self.code, "name": self.name, "repeatable": self.repeatable}
+        return {"code": self.code, "label": self.label, "repeatable": self.repeatable}
 
 
 class Field:
     def __init__(
-        self, tag: str, name: str, subfields: list[Subfield], repeatable: False
+        self, tag: str, label: str, subfields: dict, repeatable: False, url: str = None
     ) -> None:
         self.tag = tag
-        self.name = name
+        self.label = label
         self.subfields = subfields
         self.repeatable = repeatable
+        self.url = url
 
     def __str__(self) -> str:
         if len(self.subfields) > 0:
-            subfields = ": " + (",".join([sf.code for sf in self.subfields]))
+            subfields = ": " + (",".join(self.subfields.keys()))
         else:
             subfields = ""
-        return f"{self.tag} {self.name}: {'R' if self.repeatable else 'NR'} {subfields}"
+        return (
+            f"{self.tag} {self.label}: {'R' if self.repeatable else 'NR'} {subfields}"
+        )
 
     @classmethod
     def from_dict(klass, d: dict):
         return Field(
             tag=d.get("tag"),
-            name=d.get("name"),
+            label=d.get("label"),
             repeatable=d.get("repeatable"),
-            subfields=[Subfield.from_dict(d) for d in d["subfields"]],
+            url=d.get("url"),
+            subfields=[Subfield.from_dict(d) for d in d["subfields"].values()],
         )
 
     def to_dict(self) -> dict:
         return {
             "tag": self.tag,
-            "name": self.name,
+            "label": self.label,
             "repeatable": self.repeatable,
-            "subfields": [sf.to_dict() for sf in self.subfields],
+            "url": self.url,
+            "subfields": {sf.code: sf.to_dict() for sf in self.subfields.values()},
         }
 
     def get_subfield(self, code: str) -> Subfield:
@@ -69,11 +82,14 @@ class Field:
 
 class MARC:
     def __init__(self) -> None:
-        self.fields = self._load()
+        self.fields = []
 
     @cache
     def get_field(self, tag: str) -> Field:
-        return self.fields.get(tag, None)
+        for field in self.fields:
+            if field.tag == tag:
+                return field
+        return None
 
     @cache
     def get_subfield(self, tag: str, code: str) -> Subfield:
@@ -83,12 +99,29 @@ class MARC:
         else:
             return None
 
-    def _load(self) -> dict:
-        fields = {}
-        for d in _marc:
-            field = Field.from_dict(d)
-            fields[field.tag] = field
-        return fields
+    @property
+    def avram_file(self):
+        return pathlib.Path(__file__).parent / "marc.json"
+
+    @classmethod
+    @cache
+    def from_avram(cls, avram_file: IO = None) -> dict:
+        marc = MARC()
+
+        if avram_file is None:
+            avram_file = marc.avram_file.open("r")
+
+        for d in json.load(avram_file)["fields"].values():
+            marc.fields.append(Field.from_dict(d))
+
+        return marc
+
+    def to_avram(self, avram_file: IO = None) -> None:
+        if avram_file is None:
+            avram_file = self.avram_file.open("w")
+
+        d = {"fields": {f.tag: f.to_dict() for f in self.fields}}
+        json.dump(d, avram_file, indent=2)
 
 
 def fields() -> Generator[Field, None, None]:
@@ -109,13 +142,15 @@ def make_field(url: str) -> Field:
     soup = _soup(url)
     h1 = soup.select_one("h1", first=True).text.strip()
     if m1 := re.match(r"^(\d+) - (.+) \((.+)\)$", h1):
-        tag, name, repeatable = m1.groups()
+        tag, label, repeatable = m1.groups()
 
         # most pages put the subfield info in a list
-        subfields = []
+        subfields = {}
         for el in soup.select("table.subfields li"):
             if m2 := re.match(r"^\$(.) - (.+) \((.+)\)$", el.text):
-                subfields.append(Subfield(m2.group(1), m2.group(2), m2.group(3) == "R"))
+                subfields[m2.group(1)] = Subfield(
+                    m2.group(1), m2.group(2), m2.group(3) == "R"
+                )
 
         # some pages use a different layout, of course
         if len(subfields) == 0:
@@ -123,26 +158,32 @@ def make_field(url: str) -> Field:
                 for text in el.text.split("$"):
                     text = text.strip()
                     if m2 := re.match(r"^(.) - (.+) \((.+)\)$", text):
-                        subfields.append(
-                            Subfield(m2.group(1), m2.group(2), m2.group(3) == "R")
+                        subfields[m2.group(1)] = Subfield(
+                            code=m2.group(1),
+                            label=m2.group(2),
+                            repeatable=m2.group(3) == "R",
                         )
 
-        return Field(tag, name, subfields, repeatable == "R")
+        return Field(
+            tag=tag,
+            label=label.strip(),
+            repeatable=repeatable == "R",
+            url=url,
+            subfields=subfields,
+        )
 
 
 # scrape the loc website for the marc fields
-def main() -> None:
-    marc_fields = []
+def crawl(n: int = 0, quiet: bool = False, outfile: IO = sys.stdout) -> None:
+    marc = MARC()
     for f in fields():
-        print(f)
-        marc_fields.append(f.to_dict())
-    # write out the collected data
-    yaml.dump(marc_fields, sys.stdout, default_flow_style=False)
+        marc.fields.append(f)
+        if not quiet:
+            print(f)
+        if n != 0 and len(marc.fields) >= n:
+            break
+    marc.to_avram(outfile)
 
 
 def _soup(url: str) -> BeautifulSoup:
     return BeautifulSoup(requests.get(url).text, "html.parser")
-
-
-if __name__ == "__main__":
-    main()
