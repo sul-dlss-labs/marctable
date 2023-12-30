@@ -90,3 +90,4 @@ $ marctable avram
 [Avram]: https://format.gbv.de/schema/avram/specification
 [JSON file]: https://github.com/edsu/marctable/blob/main/marctable/marc.json
 [Parquet]: https://en.wikipedia.org/wiki/Apache_Parquet
+[CSV]: https://en.wikipedia.org/wiki/Comma-separated_values
