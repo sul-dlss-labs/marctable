@@ -78,7 +78,7 @@ And you can write the table as JSON Lines (JSONL), where each line is a distinct
 $ marctable jsonl data.marc data.jsonl
 ```
 
-## Regenerate YAML
+## Regenerate Avram Schema
 
 You can also regenerate the [Avram] [JSON file] from the Library of Congress website:
 
