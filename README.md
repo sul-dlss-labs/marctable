@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/edsu/marctable/actions/workflows/test.yml/badge.svg)](https://github.com/edsu/marctable/actions/workflows/test.yml)
 
-*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like [CSV] and [Parquet]. It uses the Library of Congress [MARC Bibliographic documentation] to determine whether fields and subfields should repeat or not. The MARC documentation is collected into a [Avram] [JSON file], which you could be repurposed for other things where knowing the structure of MARC bibliographic data is important.
+*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like [CSV] and [Parquet]. It uses the Library of Congress [MARC Bibliographic documentation] expressed as an [Avram] [JSON file] to determine what MARC fields and subfields to include and whether they can repeat or not.
 
 ## Install
 
