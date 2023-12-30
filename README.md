@@ -2,7 +2,7 @@
 
 [![Build Status](https://github.com/edsu/marctable/actions/workflows/test.yml/badge.svg)](https://github.com/edsu/marctable/actions/workflows/test.yml)
 
-*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like CSV and Parquet. It uses the Library of Congress [MARC Bibliographic documentation] to determine whether fields and subfields should repeat or not. The MARC documentation is collected into a [YAML file], which you could be repurposed for other things where knowing the structure of MARC bibliographic data is important.
+*marctable* is a Python command line utility that converts MARC bibliographic data into tabular formats like [CSV] and [Parquet]. It uses the Library of Congress [MARC Bibliographic documentation] to determine whether fields and subfields should repeat or not. The MARC documentation is collected into a [Avram] [JSON file], which you could be repurposed for other things where knowing the structure of MARC bibliographic data is important.
 
 ## Install
 
@@ -80,12 +80,13 @@ $ marctable jsonl data.marc data.jsonl
 
 ## Regenerate YAML
 
-If you want to regenerate the MARC [YAML file] from the Library of Congress website:
+You can also regenerate the [Avram] [JSON file] from the Library of Congress website:
 
 ```
-$ marctable yaml
+$ marctable avram
 ```
 
 [MARC Bibliographic documentation]: https://www.loc.gov/marc/bibliographic/
-[YAML file]: https://github.com/edsu/marctable/blob/main/marctable/marc.yaml
+[Avram]: https://format.gbv.de/schema/avram/specification
+[JSON file]: https://github.com/edsu/marctable/blob/main/marctable/marc.json
 [Parquet]: https://en.wikipedia.org/wiki/Apache_Parquet
