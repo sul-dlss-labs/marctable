@@ -73,6 +73,12 @@ class Field:
             "subfields": {sf.code: sf.to_dict() for sf in self.subfields.values()},
         }
 
+    def to_avram(self) -> dict:
+        d = self.to_dict()
+        if len(d["subfields"]) == 0:
+            del d["subfields"]
+        return d
+
     def get_subfield(self, code: str) -> Subfield:
         for sf in self.subfields:
             if sf.code == code:
@@ -116,7 +122,7 @@ class MARC:
 
         return marc
 
-    def to_avram(self, avram_file: IO = None) -> None:
+    def write_avram(self, avram_file: IO = None) -> None:
         if avram_file is None:
             avram_file = self.avram_file.open("w")
 
@@ -125,7 +131,7 @@ class MARC:
             "url": "https://www.loc.gov/marc/bibliographic/",
             "family": "marc",
             "language": "en",
-            "fields": {f.tag: f.to_dict() for f in self.fields},
+            "fields": {f.tag: f.to_avram() for f in self.fields},
         }
         json.dump(d, avram_file, indent=2)
 
@@ -188,7 +194,7 @@ def crawl(n: int = 0, quiet: bool = False, outfile: IO = sys.stdout) -> None:
             print(f)
         if n != 0 and len(marc.fields) >= n:
             break
-    marc.to_avram(outfile)
+    marc.write_avram(outfile)
 
 
 def _soup(url: str) -> BeautifulSoup:
