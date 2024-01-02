@@ -120,7 +120,13 @@ class MARC:
         if avram_file is None:
             avram_file = self.avram_file.open("w")
 
-        d = {"fields": {f.tag: f.to_dict() for f in self.fields}}
+        d = {
+            "title": "MARC21 bibliographic format",
+            "url": "https://www.loc.gov/marc/bibliographic/",
+            "family": "marc",
+            "language": "en",
+            "fields": {f.tag: f.to_dict() for f in self.fields},
+        }
         json.dump(d, avram_file, indent=2)
 
 

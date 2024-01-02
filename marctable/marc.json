@@ -1,4 +1,8 @@
 {
+  "title": "MARC21 bibliographic format",
+  "url": "https://www.loc.gov/marc/bibliographic/",
+  "family": "marc",
+  "language": "en",
   "fields": {
     "001": {
       "tag": "001",
