@@ -1,6 +1,6 @@
 import json
-import typing
-from typing import Generator
+from io import IOBase
+from typing import BinaryIO, Dict, Generator, List, TextIO, Tuple, Union
 
 import pyarrow
 import pymarc
@@ -9,8 +9,10 @@ from pyarrow.parquet import ParquetWriter
 
 from .marc import MARC
 
+ListOrString = Union[str, List[str]]
 
-def to_dataframe(marc_input: typing.BinaryIO, rules: list = []) -> DataFrame:
+
+def to_dataframe(marc_input: BinaryIO, rules: list = []) -> DataFrame:
     """
     Return a single DataFrame for the entire dataset.
     """
@@ -18,8 +20,8 @@ def to_dataframe(marc_input: typing.BinaryIO, rules: list = []) -> DataFrame:
 
 
 def to_csv(
-    marc_input: typing.BinaryIO,
-    csv_output: typing.TextIO,
+    marc_input: BinaryIO,
+    csv_output: TextIO,
     rules: list = [],
     batch: int = 1000,
 ) -> None:
@@ -32,8 +34,8 @@ def to_csv(
 
 
 def to_jsonl(
-    marc_input: typing.BinaryIO,
-    jsonl_output: typing.BinaryIO,
+    marc_input: BinaryIO,
+    jsonl_output: BinaryIO,
     rules: list = [],
     batch: int = 1000,
 ) -> None:
@@ -46,8 +48,8 @@ def to_jsonl(
 
 
 def to_parquet(
-    marc_input: typing.BinaryIO,
-    parquet_output: typing.BinaryIO,
+    marc_input: BinaryIO,
+    parquet_output: IOBase,
     rules: list = [],
     batch: int = 1000,
 ) -> None:
@@ -55,7 +57,7 @@ def to_parquet(
     Convert MARC to Parquet.
     """
     schema = _make_parquet_schema(rules)
-    writer = ParquetWriter(parquet_output, schema, compression="gzip")
+    writer = ParquetWriter(parquet_output, schema, compression="SNAPPY")
     for records_batch in records_iter(marc_input, rules=rules, batch=batch):
         table = pyarrow.Table.from_pylist(records_batch, schema)
         writer.write_table(table)
@@ -64,7 +66,7 @@ def to_parquet(
 
 
 def dataframe_iter(
-    marc_input: typing.BinaryIO, rules: list = [], batch: int = 1000
+    marc_input: BinaryIO, rules: list = [], batch: int = 1000
 ) -> Generator[DataFrame, None, None]:
     columns = _columns(_mapping(rules))
     for records_batch in records_iter(marc_input, rules, batch):
@@ -72,8 +74,8 @@ def dataframe_iter(
 
 
 def records_iter(
-    marc_input: typing.BinaryIO, rules: list = [], batch: int = 1000
-) -> Generator[DataFrame, None, None]:
+    marc_input: BinaryIO, rules: list = [], batch: int = 1000
+) -> Generator[List[Dict], None, None]:
     """
     Read MARC input and generate a list of dictionaries, where each list element
     represents a MARC record.
@@ -85,9 +87,10 @@ def records_iter(
     for record in pymarc.MARCReader(marc_input):
         # if pymarc can't make sense of a record it returns None
         if record is None:
+            # TODO: log this?
             continue
 
-        r = {}
+        r: Dict[str, ListOrString] = {}
         for field in record.fields:
             if field.tag not in mapping:
                 continue
@@ -98,12 +101,15 @@ def records_iter(
             if subfields is None:
                 key = f"F{field.tag}"
                 if marc.get_field(field.tag).repeatable:
-                    value = r.get(key, [])
-                    value.append(_stringify_field(field))
+                    lst = r.get(key, [])
+                    assert isinstance(
+                        lst, list
+                    ), "Repeatable field contains a string instead of a list"
+                    lst.append(_stringify_field(field))
+                    r[key] = lst
                 else:
-                    value = _stringify_field(field)
-
-                r[key] = value
+                    s = _stringify_field(field)
+                    r[key] = s
 
             # otherwise only add the subfields that were requested in the mapping
             else:
@@ -113,7 +119,10 @@ def records_iter(
 
                     key = f"F{field.tag}{sf.code}"
                     if marc.get_subfield(field.tag, sf.code).repeatable:
-                        value = r.get(key, [])
+                        value: ListOrString = r.get(key, [])
+                        assert isinstance(
+                            value, list
+                        ), "Repeatable field contains a string instead of list"
                         value.append(sf.value)
                     else:
                         value = sf.value
@@ -180,7 +189,7 @@ def _columns(mapping: dict) -> list:
     return cols
 
 
-def _make_pandas_schema(rules: list) -> pyarrow.Schema:
+def _make_pandas_schema(rules: list) -> Dict[str, str]:
     marc = MARC.from_avram()
     mapping = _mapping(rules)
     schema = {}
@@ -200,19 +209,22 @@ def _make_pandas_schema(rules: list) -> pyarrow.Schema:
 def _make_parquet_schema(rules: list) -> pyarrow.Schema:
     marc = MARC.from_avram()
     mapping = _mapping(rules)
-    cols = []
+
+    pyarrow_str = pyarrow.string()
+    pyarrow_list_of_str = pyarrow.list_(pyarrow.string())
+
+    cols: List[Tuple[str, pyarrow.DataType]] = []
     for field_tag, subfields in mapping.items():
         if subfields is None:
             if marc.get_field(field_tag).repeatable:
-                typ = pyarrow.list_(pyarrow.string())
+                cols.append((f"F{field_tag}", pyarrow_list_of_str))
             else:
-                typ = pyarrow.string()
-            cols.append((f"F{field_tag}", typ))
+                cols.append((f"F{field_tag}", pyarrow_str))
         else:
-            for sf in subfields:
-                if marc.get_subfield(field_tag, sf).repeatable:
-                    typ = pyarrow.list_(pyarrow.string())
+            for sf_code in subfields:
+                sf = marc.get_subfield(field_tag, sf_code)
+                if sf is not None and sf.repeatable:
+                    cols.append((f"F{field_tag}{sf}", pyarrow_list_of_str))
                 else:
-                    typ = pyarrow.string()
-                cols.append((f"F{field_tag}{sf}", typ))
-    return pyarrow.schema(cols)
+                    cols.append((f"F{field_tag}{sf}", pyarrow_str))
+    return pyarrow.schema(cols)  # type: ignore[arg-type]
