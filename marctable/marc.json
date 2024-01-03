@@ -1,46 +1,44 @@
 {
+  "title": "MARC21 bibliographic format",
+  "url": "https://www.loc.gov/marc/bibliographic/",
+  "family": "marc",
+  "language": "en",
   "fields": {
     "001": {
       "tag": "001",
       "label": "Control Number",
       "repeatable": false,
-      "url": "https://www.loc.gov/marc/bibliographic/bd001.html",
-      "subfields": {}
+      "url": "https://www.loc.gov/marc/bibliographic/bd001.html"
     },
     "003": {
       "tag": "003",
       "label": "Control Number Identifier",
       "repeatable": false,
-      "url": "https://www.loc.gov/marc/bibliographic/bd003.html",
-      "subfields": {}
+      "url": "https://www.loc.gov/marc/bibliographic/bd003.html"
     },
     "005": {
       "tag": "005",
       "label": "Date and Time of Latest Transaction",
       "repeatable": false,
-      "url": "https://www.loc.gov/marc/bibliographic/bd005.html",
-      "subfields": {}
+      "url": "https://www.loc.gov/marc/bibliographic/bd005.html"
     },
     "006": {
       "tag": "006",
       "label": "Fixed-Length Data Elements-Additional Material Characteristics",
       "repeatable": true,
-      "url": "https://www.loc.gov/marc/bibliographic/bd006.html",
-      "subfields": {}
+      "url": "https://www.loc.gov/marc/bibliographic/bd006.html"
     },
     "007": {
       "tag": "007",
       "label": "Physical Description Fixed Field-General Information",
       "repeatable": true,
-      "url": "https://www.loc.gov/marc/bibliographic/bd007.html",
-      "subfields": {}
+      "url": "https://www.loc.gov/marc/bibliographic/bd007.html"
     },
     "008": {
       "tag": "008",
       "label": "Fixed-Length Data Elements-General Information",
       "repeatable": false,
-      "url": "https://www.loc.gov/marc/bibliographic/bd008.html",
-      "subfields": {}
+      "url": "https://www.loc.gov/marc/bibliographic/bd008.html"
     },
     "010": {
       "tag": "010",
