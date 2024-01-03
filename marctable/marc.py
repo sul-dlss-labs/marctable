@@ -56,12 +56,13 @@ class Field:
 
     @classmethod
     def from_dict(klass, d: dict):
+        subfields = d.get("subfields") or {}
         return Field(
             tag=d.get("tag"),
             label=d.get("label"),
             repeatable=d.get("repeatable"),
             url=d.get("url"),
-            subfields=[Subfield.from_dict(d) for d in d["subfields"].values()],
+            subfields=[Subfield.from_dict(d) for d in subfields.values()],
         )
 
     def to_dict(self) -> dict:
