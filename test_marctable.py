@@ -1,10 +1,11 @@
+import json
 import pathlib
 from io import StringIO
 
 import pandas
-import json
-from marctable.marc import MARC, crawl
+from marctable.marc import MARC, SchemaFieldError, SchemaSubfieldError, crawl
 from marctable.utils import _mapping, dataframe_iter, to_csv, to_dataframe, to_parquet
+from pytest import raises
 
 marc = MARC.from_avram()
 
@@ -41,12 +42,14 @@ def test_marc() -> None:
 
 def test_get_field() -> None:
     assert marc.get_field("245")
-    assert not marc.get_field("abc")
+    with raises(SchemaFieldError, match="abc is not a defined field tag in Avram"):
+        marc.get_field("abc")
 
 
 def test_get_subfield() -> None:
     assert marc.get_subfield("245", "a").label == "Title"
-    assert marc.get_subfield("245", "-") is None
+    with raises(SchemaSubfieldError, match="- is not a valid subfield in field 245"):
+        marc.get_subfield("245", "-") is None
 
 
 def test_non_repeatable_field() -> None:
@@ -71,7 +74,8 @@ def test_df() -> None:
     # 245 is not repeatable
     assert (
         df.iloc[0]["F245"]
-        == "Leak testing CD-ROM [computer file] / technical editors, Charles N. Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
+        == "Leak testing CD-ROM [computer file] / technical editors, Charles N. "
+        "Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
     )
     # 650 is repeatable
     assert df.iloc[0]["F650"] == ["Leak detectors.", "Gas leakage."]
@@ -86,7 +90,8 @@ def test_custom_fields_df() -> None:
     assert df.columns[1] == "F650"
     assert (
         df.iloc[0]["F245"]
-        == "Leak testing CD-ROM [computer file] / technical editors, Charles N. Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
+        == "Leak testing CD-ROM [computer file] / technical editors, Charles N. "
+        "Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
     )
     assert df.iloc[0]["F650"] == ["Leak detectors.", "Gas leakage."]
 
@@ -132,7 +137,8 @@ def test_to_csv() -> None:
     assert len(df.columns) == 215
     assert (
         df.iloc[0]["F245"]
-        == "Leak testing CD-ROM [computer file] / technical editors, Charles N. Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
+        == "Leak testing CD-ROM [computer file] / technical editors, Charles N. "
+        "Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
     )
 
 

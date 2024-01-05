@@ -1,4 +1,6 @@
 from collections.abc import Callable
+from io import IOBase
+from typing import BinaryIO, TextIO
 
 import click
 
@@ -38,7 +40,7 @@ def rule_params(f: Callable) -> Callable:
 @cli.command()
 @io_params
 @rule_params
-def csv(infile: click.File, outfile: click.File, rules: list, batch: int) -> None:
+def csv(infile: BinaryIO, outfile: TextIO, rules: list, batch: int) -> None:
     """
     Convert MARC to CSV.
     """
@@ -48,7 +50,7 @@ def csv(infile: click.File, outfile: click.File, rules: list, batch: int) -> Non
 @cli.command()
 @io_params
 @rule_params
-def parquet(infile: click.File, outfile: click.File, rules: list, batch: int) -> None:
+def parquet(infile: BinaryIO, outfile: IOBase, rules: list, batch: int) -> None:
     """
     Convert MARC to Parquet.
     """
@@ -58,7 +60,7 @@ def parquet(infile: click.File, outfile: click.File, rules: list, batch: int) ->
 @cli.command()
 @io_params
 @rule_params
-def jsonl(infile: click.File, outfile: click.File, rules: list, batch: int) -> None:
+def jsonl(infile: BinaryIO, outfile: BinaryIO, rules: list, batch: int) -> None:
     """
     Convert MARC to JSON Lines (JSONL)
     """
@@ -67,9 +69,10 @@ def jsonl(infile: click.File, outfile: click.File, rules: list, batch: int) -> N
 
 @cli.command()
 @click.argument("outfile", type=click.File("w"), default="-")
-def avram(outfile: click.File) -> None:
+def avram(outfile: TextIO) -> None:
     """
-    Generate Avram (YAML) from scraping the Library of Congress MARC bibliographic website.
+    Generate Avram (YAML) from scraping the Library of Congress MARC
+    bibliographic web.
     """
     marctable.marc.crawl(outfile=outfile)
 
