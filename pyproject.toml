@@ -3,7 +3,7 @@ name = "marctable"
 version = "0.3.0"
 description = "Convert MARC to CSV and Parquet"
 authors = ["Ed Summers <ehs@pobox.com>"]
-license = "MIT"
+license = "Apache"
 readme = "README.md"
 
 [tool.setuptools.packages.find]
