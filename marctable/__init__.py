@@ -71,8 +71,7 @@ def jsonl(infile: BinaryIO, outfile: BinaryIO, rules: list, batch: int) -> None:
 @click.argument("outfile", type=click.File("w"), default="-")
 def avram(outfile: TextIO) -> None:
     """
-    Generate Avram (YAML) from scraping the Library of Congress MARC
-    bibliographic web.
+    Generate an Avram schema (JSON) from the Library of Congress MARC bibliographic web.
     """
     marctable.marc.crawl(outfile=outfile)
 
