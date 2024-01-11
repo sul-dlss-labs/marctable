@@ -133,7 +133,7 @@ def test_to_csv() -> None:
         open("test-data/utf8.marc", "rb"), open("test-data/utf8.csv", "w"), batch=1000
     )
     df = pandas.read_csv("test-data/utf8.csv")
-    assert len(df) == 10622
+    assert len(df) == 10612
     assert len(df.columns) == 215
     assert (
         df.iloc[0]["F245"]

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "marctable"
-version = "0.3.1"
+version = "0.3.2"
 description = "Convert MARC to CSV and Parquet"
 authors = ["Ed Summers <ehs@pobox.com>"]
 license = "Apache"

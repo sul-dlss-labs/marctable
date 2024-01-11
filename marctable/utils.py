@@ -31,6 +31,7 @@ def to_csv(
     first_batch = True
     for df in dataframe_iter(marc_input, rules=rules, batch=batch):
         df.to_csv(csv_output, header=first_batch, index=False)
+        first_batch = False
 
 
 def to_jsonl(
