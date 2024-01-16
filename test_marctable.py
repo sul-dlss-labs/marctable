@@ -165,3 +165,19 @@ def test_to_parquet_with_rules() -> None:
     df = pandas.read_parquet("test-data/utf8.parquet")
     assert len(df) == 10612
     assert len(df.columns) == 3
+
+
+def test_xml() -> None:
+    # this mirrors test_df, but works off of the MARCXML instead
+    df = to_dataframe(open("test-data/marc.xml", "rb"))
+    assert len(df.columns) == 215
+    assert len(df) == 10631
+    assert df.iloc[0]["F008"] == "000110s2000    ohu    f   m        eng  "
+    # 245 is not repeatable
+    assert (
+        df.iloc[0]["F245"]
+        == "Leak testing CD-ROM [computer file] / technical editors, Charles N. "
+        "Jackson, Jr., Charles N. Sherlock ; editor, Patrick O. Moore."
+    )
+    # 650 is repeatable
+    assert df.iloc[0]["F650"] == ["Leak detectors.", "Gas leakage."]
