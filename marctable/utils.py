@@ -84,8 +84,14 @@ def records_iter(
     mapping = _mapping(rules)
     marc = MARC.from_avram()
 
+    # TODO: MARCXML parsing brings all the records into memory
+    if marc_input.name.endswith(".xml"):
+        reader = pymarc.marcxml.parse_xml_to_array(marc_input)
+    else:
+        reader = pymarc.MARCReader(marc_input)
+
     rows = []
-    for record in pymarc.MARCReader(marc_input):
+    for record in reader:
         # if pymarc can't make sense of a record it returns None
         if record is None:
             # TODO: log this?
