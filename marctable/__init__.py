@@ -37,34 +37,51 @@ def rule_params(f: Callable) -> Callable:
     return f
 
 
+def avram_params(f: Callable) -> Callable:
+    """
+    Decorator for selecting an avram schema.
+    """
+    f = click.option(
+        "--schema",
+        "-s",
+        "avram_file",
+        type=click.File("rb"),
+        help="Specify avram schema file",
+    )(f)
+    return f
+
+
 @cli.command()
 @io_params
 @rule_params
-def csv(infile: BinaryIO, outfile: TextIO, rules: list, batch: int) -> None:
+@avram_params
+def csv(infile: BinaryIO, outfile: TextIO, rules: list, batch: int, avram_file: BinaryIO) -> None:
     """
     Convert MARC to CSV.
     """
-    to_csv(infile, outfile, rules=rules, batch=batch)
+    to_csv(infile, outfile, rules=rules, batch=batch, avram_file=avram_file)
 
 
 @cli.command()
 @io_params
 @rule_params
-def parquet(infile: BinaryIO, outfile: IOBase, rules: list, batch: int) -> None:
+@avram_params
+def parquet(infile: BinaryIO, outfile: IOBase, rules: list, batch: int, avram_file: BinaryIO) -> None:
     """
     Convert MARC to Parquet.
     """
-    to_parquet(infile, outfile, rules=rules, batch=batch)
+    to_parquet(infile, outfile, rules=rules, batch=batch, avram_file=avram_file)
 
 
 @cli.command()
 @io_params
 @rule_params
-def jsonl(infile: BinaryIO, outfile: BinaryIO, rules: list, batch: int) -> None:
+@avram_params
+def jsonl(infile: BinaryIO, outfile: BinaryIO, rules: list, batch: int, avram_file: BinaryIO) -> None:
     """
     Convert MARC to JSON Lines (JSONL)
     """
-    to_jsonl(infile, outfile, rules=rules, batch=batch)
+    to_jsonl(infile, outfile, rules=rules, batch=batch, avram_file=avram_file)
 
 
 @cli.command()
