@@ -1,6 +1,5 @@
 from collections.abc import Callable
-from io import IOBase
-from typing import BinaryIO, TextIO
+from typing import BinaryIO, TextIO, IO, Any
 
 import click
 
@@ -66,7 +65,7 @@ def csv(infile: BinaryIO, outfile: TextIO, rules: list, batch: int, avram_file: 
 @io_params
 @rule_params
 @avram_params
-def parquet(infile: BinaryIO, outfile: IOBase, rules: list, batch: int, avram_file: BinaryIO) -> None:
+def parquet(infile: BinaryIO, outfile: IO[Any], rules: list, batch: int, avram_file: BinaryIO) -> None:
     """
     Convert MARC to Parquet.
     """

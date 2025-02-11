@@ -1,44 +1,58 @@
-[tool.poetry]
+[project]
 name = "marctable"
-version = "0.4.0"
+version = "0.5.0"
 description = "Convert MARC to CSV and Parquet"
-authors = ["Ed Summers <ehs@pobox.com>"]
-license = "Apache"
+authors = [{ name = "Ed Summers", email = "ehs@pobox.com" }]
+license = { file = "LICENSE" }
 readme = "README.md"
-
-[tool.setuptools.packages.find]
-where = ["marctable"]
-
-[tool.setuptools.package-data]
-marctable = ["*.json"]
-
-[tool.poetry.dependencies]
-python = "^3.11"
-pymarc = "^5.1.0"
-pyarrow = "^14.0.2"
-pandas = "^2.1.4"
-beautifulsoup4 = "^4.12.2"
-requests = "^2.31.0"
-click = "^8.1.7"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.3"
-black = "^23.12.0"
-types-requests = "^2.31.0.10"
-types-beautifulsoup4 = "^4.12.0.7"
-mypy = "^1.8.0"
-pandas-stubs = "^2.1.4.231227"
-pyarrow-stubs = "^10.0.1.7"
-
-[tool.poetry.scripts]
-marctable = "marctable:main"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires-python = ">= 3.11" 
+dependencies = [
+    "pymarc >= 5.1.0",
+    "pyarrow >= 14.0.2",
+    "pandas >= 2.1.4",
+    "beautifulsoup4 >= 4.12.2",
+    "requests >= 2.31.0",
+    "click >= 8.1.7"
+]
 
 [project.urls]
-Homepage = "https://github.com/edsu/marctable"
+Homepage = "https://github.com/sul-dlss-labs/marctable"
+
+[project.scripts]
+marctable = "marctable:main"
+
+[dependency-groups]
+dev = [
+    "pytest >= 7.4.3",
+    "black >= 23.12.0",
+    "types-requests >= 2.31.0.10",
+    "types-beautifulsoup4 >= 4.12.0.7",
+    "mypy >= 1.8.0",
+    "pandas-stubs >= 2.1.4.231227",
+    "pyarrow-stubs >= 10.0.1.7",
+    "ruff>=0.9.6",
+    "setuptools>=75.8.0",
+    "twine>=6.1.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+packages = ["src/marctable"]
+include = [
+  "src/*.py",
+  "src/*.json"
+]
+
+
+[tool.pytest.ini_options]
+log_cli = true
+log_cli_level = "INFO"
+pythonpath = [
+    "src"
+]
 
 [tool.mypy]
 warn_no_return = false

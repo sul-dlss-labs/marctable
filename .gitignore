@@ -4,3 +4,5 @@ test-data/*.csv
 test-data/*.parquet
 *.pyc
 dist
+uv.lock
+*.egg-info
