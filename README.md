@@ -10,6 +10,12 @@
 $ pip install marctable
 ```
 
+or just run it:
+
+```
+$ pipx run marctable
+```
+
 ## Usage
 
 *marctable* provides a subcommand style interface for exporting MARC data.
@@ -84,6 +90,24 @@ You can also regenerate the [Avram] [JSON file] from the Library of Congress web
 
 ```
 $ marctable avram
+```
+
+## Develop
+
+To help develop *marctable* you will want to:
+
+```
+$ git clone https://github.com/sul-dlss-labs/marctable`
+$ cd marctable
+$ pip3 install uv
+$ uv run pytest
+```
+
+And then to build and publish a new version:
+
+```
+$ uv build
+$ uv publish
 ```
 
 [MARC Bibliographic documentation]: https://www.loc.gov/marc/bibliographic/

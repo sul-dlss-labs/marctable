@@ -1,6 +1,5 @@
 import json
-from io import IOBase
-from typing import BinaryIO, Dict, Generator, List, Optional, TextIO, Tuple, Union
+from typing import BinaryIO, Dict, Generator, List, Optional, TextIO, Tuple, Union, IO, Any
 
 import pyarrow
 import pymarc
@@ -52,7 +51,7 @@ def to_jsonl(
 
 def to_parquet(
     marc_input: BinaryIO,
-    parquet_output: IOBase,
+    parquet_output: IO[Any],
     rules: list = [],
     batch: int = 1000,
     avram_file: Optional[BinaryIO] = None,
@@ -61,7 +60,7 @@ def to_parquet(
     Convert MARC to Parquet.
     """
     schema = _make_parquet_schema(rules, avram_file)
-    writer = ParquetWriter(parquet_output, schema, compression="SNAPPY")
+    writer = ParquetWriter(parquet_output, schema, compression="snappy")
     for records_batch in records_iter(marc_input, rules=rules, batch=batch, avram_file=avram_file):
         table = pyarrow.Table.from_pylist(records_batch, schema)
         writer.write_table(table)
@@ -112,9 +111,9 @@ def records_iter(
                 key = f"F{field.tag}"
                 if marc.get_field(field.tag).repeatable:
                     lst = r.get(key, [])
-                    assert isinstance(
-                        lst, list
-                    ), "Repeatable field contains a string instead of a list"
+                    assert isinstance(lst, list), (
+                        "Repeatable field contains a string instead of a list"
+                    )
                     lst.append(_stringify_field(field))
                     r[key] = lst
                 else:
@@ -130,9 +129,9 @@ def records_iter(
                     key = f"F{field.tag}{sf.code}"
                     if marc.get_subfield(field.tag, sf.code).repeatable:
                         value: ListOrString = r.get(key, [])
-                        assert isinstance(
-                            value, list
-                        ), "Repeatable field contains a string instead of list"
+                        assert isinstance(value, list), (
+                            "Repeatable field contains a string instead of list"
+                        )
                         value.append(sf.value)
                     else:
                         value = sf.value
@@ -153,7 +152,7 @@ def records_iter(
 
 def _stringify_field(field: pymarc.Field) -> str:
     if field.is_control_field():
-        return field.data
+        return field.data if field.data is not None else ""
     else:
         return " ".join([sf.value for sf in field.subfields])
 
